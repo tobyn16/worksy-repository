@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Worksy Policy Tester</title>
+    <style>
+      body {
+        font-family: system-ui, Inter, Arial;
+        margin: 20px;
+        max-width: 760px;
+      }
+      input,
+      button {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+      pre {
+        background: #111;
+        color: #eee;
+        padding: 12px;
+        border-radius: 8px;
+        overflow: auto;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Worksy Policy Tester</h1>
+    <div class="row">
+      <button id="ping">Ping server</button>
+      <button id="seed">Seed demo assignment</button>
+    </div>
+    <div class="row">
+      <input id="aid" placeholder="Assignment UUID" style="min-width: 360px" />
+      <button id="load">Load policy & caps</button>
+    </div>
+    <h3>Result</h3>
+    <pre id="out">(nothing yet)</pre>
+
+    <script>
+      const out = document.getElementById("out");
+      const log = (obj) =>
+        (out.textContent =
+          typeof obj === "string" ? obj : JSON.stringify(obj, null, 2));
+
+      document.getElementById("ping").onclick = async () => {
+        const r = await fetch("/api/ping");
+        log(await r.json());
+      };
+
+      document.getElementById("seed").onclick = async () => {
+        const r = await fetch("/api/assignment/seed", { method: "POST" });
+        const j = await r.json();
+        log(j);
+        if (j.id) document.getElementById("aid").value = j.id;
+      };
+
+      document.getElementById("load").onclick = async () => {
+        const id = document.getElementById("aid").value.trim();
+        if (!id) return log("Paste an assignment id first.");
+        const r = await fetch(
+          "/api/policy?assignmentId=" + encodeURIComponent(id),
+        );
+        log(await r.json());
+      };
+    </script>
+  </body>
+</html>

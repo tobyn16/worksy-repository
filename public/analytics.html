@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Worksy Analytics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, system-ui;
+        background: #0e1125;
+        color: #eef2ff;
+      }
+      .container {
+        max-width: 900px;
+        margin: 30px auto;
+        padding: 0 16px;
+      }
+      input,
+      select {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #2a3062;
+        background: #0f1230;
+        color: #eef2ff;
+      }
+      button {
+        padding: 9px 12px;
+        border-radius: 8px;
+        border: 1px solid #2a3062;
+        background: #2b3578;
+        color: #eef2ff;
+        cursor: pointer;
+      }
+      .card {
+        background: #10143a;
+        border: 1px solid #2a3062;
+        padding: 16px;
+        border-radius: 10px;
+        margin-top: 12px;
+      }
+      .stat {
+        font-size: 22px;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Worksy Analytics</h1>
+      <div class="card">
+        <input
+          id="adminKey"
+          placeholder="Admin key (x-admin-key)"
+          style="min-width: 260px"
+        />
+        <input
+          id="assignmentId"
+          placeholder="Assignment UUID"
+          style="min-width: 360px"
+        />
+        <button id="load">Load metrics</button>
+      </div>
+      <div class="card" id="out">Enter a key and assignment id.</div>
+    </div>
+    <script>
+      const adminKeyEl = document.getElementById("adminKey");
+      const aidEl = document.getElementById("assignmentId");
+      const out = document.getElementById("out");
+      document.getElementById("load").onclick = async () => {
+        const key = adminKeyEl.value.trim(),
+          id = aidEl.value.trim();
+        if (!key || !id) {
+          out.textContent = "Enter key and assignment id";
+          return;
+        }
+        const r = await fetch(
+          "/api/admin/metrics?assignmentId=" + encodeURIComponent(id),
+          { headers: { "x-admin-key": key } },
+        );
+        if (r.status === 401) {
+          out.textContent = "401 Unauthorized (check key)";
+          return;
+        }
+        if (!r.ok) {
+          out.textContent = "Error " + r.status;
+          return;
+        }
+        const j = await r.json();
+        out.innerHTML = `
+        <div><span class="stat">${j.sessions}</span> sessions</div>
+        <div><span class="stat">${j.submitted}</span> submitted & locked</div>
+        <div><span class="stat">${j.totalPrompts}</span> total prompts</div>
+        <div><span class="stat">${j.totalTokens}</span> total tokens</div>
+        <div>Est. cost (rough): £${(j.estCost || 0).toFixed(2)}</div>
+      `;
+      };
+    </script>
+  </body>
+</html>

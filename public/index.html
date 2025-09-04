@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>Worksy — University of Leicester AI Sandbox</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+      :root {
+        --bg: #0f1226;
+        --card: #161a36;
+        --accent: #6c8cff;
+        --accent2: #c6d2ff;
+        --text: #eef2ff;
+        --muted: #aab3d1;
+        --bubble: #0f1230;
+        --radius: 14px;
+        --focus: #9db2ff;
+      }
+      [data-theme="light"] {
+        --bg: #f6f7fb;
+        --card: #ffffff;
+        --accent: #3d5afe;
+        --accent2: #3d5afe;
+        --text: #0b1024;
+        --muted: #505b7a;
+        --bubble: #f2f4ff;
+        --focus: #3d5afe;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui;
+        background: var(--bg);
+        color: var(--text);
+      }
+      a {
+        color: var(--accent2);
+      }
+      .container {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      header {
+        padding: 16px 0 8px;
+      }
+      h1 {
+        margin: 0;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 16px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid #2a306233;
+        border-radius: var(--radius);
+        padding: 16px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #2a306233;
+        background: var(--bubble);
+        color: var(--text);
+      }
+      input:focus,
+      textarea:focus,
+      select:focus,
+      button:focus {
+        outline: 2px solid var(--focus);
+      }
+      button {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid #2a306233;
+        background: linear-gradient(180deg, #2b3578, #1e275f);
+        color: #fff;
+        cursor: pointer;
+      }
+      button.primary {
+        background: linear-gradient(180deg, #6c8cff, #4c66dd);
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid #2a306233;
+        color: var(--accent2);
+        font-size: 12px;
+      }
+      .policy {
+        position: sticky;
+        top: 8px;
+        z-index: 2;
+        background: #10143a22;
+        border: 1px dashed #2f3a8322;
+        border-radius: 12px;
+        padding: 12px;
+        margin-top: 10px;
+      }
+      #log {
+        height: 380px;
+        overflow: auto;
+        margin-top: 8px;
+      }
+      .bubble {
+        background: var(--bubble);
+        border: 1px solid #2a306233;
+        padding: 10px 12px;
+        border-radius: 12px;
+        margin: 10px 0;
+        max-width: 85%;
+        position: relative;
+      }
+      .me {
+        margin-left: auto;
+      }
+      .ai {
+        margin-right: auto;
+      }
+      .copy {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        font-size: 11px;
+        opacity: 0.7;
+      }
+      .meta {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .toast {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        background: #18204d;
+        border: 1px solid #2a3062;
+        color: #cfe0ff;
+        padding: 10px 12px;
+        border-radius: 10px;
+        display: none;
+      }
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin: 8px 0;
+      }
+      .toolbar .pill {
+        cursor: pointer;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="container" aria-label="Worksy header">
+      <div class="toolbar">
+        <h1 style="margin-right: auto">
+          Worksy — University of Leicester AI Sandbox
+        </h1>
+        <button id="themeToggle" class="pill" aria-label="Toggle theme">
+          Toggle Light/Dark
+        </button>
+        <button id="fontUp" class="pill" aria-label="Increase font size">
+          A+
+        </button>
+        <button id="fontDown" class="pill" aria-label="Decrease font size">
+          A-
+        </button>
+        <button id="clearBtn" class="pill" aria-label="Clear chat view">
+          Clear view
+        </button>
+      </div>
+      <div class="muted">
+        “work easy” — AMBER coursework coaching with compliance logging.
+      </div>
+    </header>
+
+    <div class="container grid" role="main">
+      <div class="card" aria-label="Chat panel">
+        <div class="row" aria-live="polite">
+          <div id="usage" class="pill">Prompts used: 0 / ?</div>
+          <div id="modePill" class="pill">Mode: —</div>
+          <div id="duePill" class="pill">Due: —</div>
+        </div>
+
+        <label style="margin-top: 8px">Student name</label>
+        <input
+          id="student"
+          placeholder="e.g. Rahul Modha"
+          aria-label="Student name"
+        />
+
+        <label style="margin-top: 8px">Assignment ID (UUID)</label>
+        <input
+          id="assignmentId"
+          placeholder="paste assignment UUID"
+          aria-label="Assignment ID"
+        />
+
+        <div class="row" style="margin-top: 8px">
+          <button id="loadPolicyBtn" class="primary">
+            Load policy & brief
+          </button>
+        </div>
+
+        <div
+          id="policyBox"
+          class="policy"
+          style="display: none"
+          aria-label="Policy ribbon"
+        >
+          <b>Policy (AMBER)</b>
+          <div id="policyReminder" class="muted" style="margin: 6px 0"></div>
+          <div class="muted">
+            <b>Allowed:</b> <span id="allowedList"></span>
+          </div>
+          <div class="muted">
+            <b>Not allowed:</b> <span id="notList"></span>
+          </div>
+          <div id="capsLine" class="muted" style="margin-top: 4px"></div>
+          <label class="muted" style="display: block; margin-top: 6px"
+            ><input type="checkbox" id="consentChk" /> I understand my usage is
+            logged and attached to my submission.</label
+          >
+        </div>
+
+        <div id="log" aria-live="polite"></div>
+        <div id="typing" class="muted" style="display: none">
+          Worksy is thinking…
+        </div>
+
+        <label style="margin-top: 10px"
+          >Your question
+          <span id="wc" class="muted">(0 / 100 words)</span></label
+        >
+        <textarea
+          id="msg"
+          rows="3"
+          placeholder="Ask something…"
+          maxlength="1200"
+          aria-label="Your question"
+        ></textarea>
+
+        <label style="margin-top: 10px"
+          >Optional notes for staff (included in AI Index)</label
+        >
+        <textarea
+          id="notes"
+          rows="2"
+          placeholder="e.g., I used Worksy to check my understanding of PCR steps."
+        ></textarea>
+
+        <div class="row" style="margin-top: 8px">
+          <button id="sendBtn" class="primary">Send</button>
+          <button id="indexBtn">Generate AI Index</button>
+          <button id="submitBtn">Submit & Lock</button>
+          <button id="saveCloudBtn">Save to Uni Storage</button>
+          <button id="dlJsonBtn">Download JSON</button>
+          <button id="dlPdfBtn">Download PDF</button>
+        </div>
+
+        <div class="muted" style="margin-top: 6px">
+          All activity is logged. Answers are capped by the assignment.
+        </div>
+      </div>
+
+      <div class="card" aria-label="About and links">
+        <h3 style="margin-top: 0">About Worksy</h3>
+        <p class="muted">
+          Built at Leicester, by a Leicester student, to enforce AI policy
+          fairly and transparently.
+        </p>
+        <a href="/admin.html" target="_blank">Open Admin (requires ADMIN_KEY)</a
+        ><br />
+        <a href="/analytics.html" target="_blank">Open Analytics (admin key)</a
+        ><br />
+        <a href="/policy_tester.html" target="_blank"
+          >Open Policy Tester (dev)</a
+        >
+      </div>
+    </div>
+
+    <footer class="container">© Worksy (Demo)</footer>
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="/js/app.js" defer></script>
+  </body>
+</html>

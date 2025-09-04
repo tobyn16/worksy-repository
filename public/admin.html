@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Worksy Admin — Sessions & Transcripts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, system-ui;
+        background: #0e1125;
+        color: #eef2ff;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 16px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      input,
+      select {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #2a3062;
+        background: #0f1230;
+        color: #eef2ff;
+      }
+      button {
+        padding: 9px 12px;
+        border-radius: 8px;
+        border: 1px solid #2a3062;
+        background: #2b3578;
+        color: #eef2ff;
+        cursor: pointer;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+      }
+      th,
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #2a3062;
+        text-align: left;
+        font-size: 14px;
+      }
+      #events {
+        background: #10143a;
+        padding: 12px;
+        border-radius: 10px;
+        margin-top: 14px;
+        max-height: 420px;
+        overflow: auto;
+      }
+      .bubble {
+        background: #0f1230;
+        border: 1px solid #2a3062;
+        border-radius: 8px;
+        padding: 8px 10px;
+        margin: 8px 0;
+      }
+      .meta {
+        font-size: 12px;
+        color: #aab3d1;
+      }
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        border: 1px solid #2a3062;
+        margin-left: 6px;
+      }
+      .riskHi {
+        background: #3b1120;
+        color: #ff8ea0;
+        border-color: #7a2a3a;
+      }
+      #status {
+        margin: 10px 0;
+        padding: 10px 12px;
+        border-radius: 8px;
+        display: none;
+      }
+      .ok {
+        background: #11331f;
+        border: 1px solid #1b6b3c;
+        color: #b6f5c8;
+      }
+      .warn {
+        background: #332511;
+        border: 1px solid #6b4c1b;
+        color: #f5deb6;
+      }
+      .err {
+        background: #3b1120;
+        border: 1px solid #7a2a3a;
+        color: #ffb8c4;
+      }
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #2a3062;
+        background: #0f1230;
+        color: #eef2ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Worksy Admin (read-only)</h1>
+
+      <div id="status"></div>
+
+      <div class="row" style="margin-bottom: 6px">
+        <input
+          id="adminKey"
+          placeholder="Admin key (x-admin-key)"
+          style="min-width: 280px"
+        />
+        <button id="testKeyBtn">Test key</button>
+        <select id="assignmentSel"></select>
+        <input id="studentFilter" placeholder="Filter by student" />
+        <label>From <input id="from" type="datetime-local" /></label>
+        <label>To <input id="to" type="datetime-local" /></label>
+        <label><input type="checkbox" id="lockedOnly" /> Locked only</label>
+        <label><input type="checkbox" id="highTabs" /> High tab-switch</label>
+      </div>
+
+      <div class="row">
+        <button id="loadBtn">Load</button>
+        <button id="exportBtn">Export CSV</button>
+      </div>
+
+      <h3>Bulk assignment import</h3>
+      <p class="meta">
+        Paste CSV with headers:
+        id,module_code,title,prompt_cap,output_token_cap,input_token_cap,mode,due_at,model
+      </p>
+      <textarea
+        id="csv"
+        placeholder="id,module_code,title,prompt_cap,output_token_cap,input_token_cap,mode,due_at,model&#10;,,,,,,amber,,gpt-4o-mini"
+      ></textarea>
+      <div class="row"><button id="importBtn">Import CSV</button></div>
+
+      <table id="sessionTable">
+        <thead>
+          <tr>
+            <th>Session ID</th>
+            <th>Student</th>
+            <th>Started</th>
+            <th>Submitted</th>
+            <th>Submitted at</th>
+            <th>Tab switches</th>
+            <th>Risk</th>
+            <th>Fingerprint</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="row" style="margin-top: 12px">
+        <button id="pdfBtn" disabled>Download Transcript PDF</button>
+      </div>
+      <div id="events"></div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"
+      defer
+    ></script>
+    <script src="/js/admin.js" defer></script>
+  </body>
+</html>
